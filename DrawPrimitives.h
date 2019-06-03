@@ -175,12 +175,12 @@ void drawFullStar(){
     double L6=L2/cos(72*PI/180);
     double L7=L6*sin(54*PI/180);
     double L8=L6*cos(54*PI/180)+0.2;
-    
+
 //    draw two stars
     glBegin(GL_POLYGON);     //设置绘制类型为多边形
 
     glColor3f(0.96f,0.83f,0.85f);
-    
+
     glVertex3f(0.0f,0.0f,z);
     glVertex3f(0.0f,L5+L1,z);    //1
     glVertex3f(L2,L1,z);    //2
@@ -193,7 +193,7 @@ void drawFullStar(){
     glVertex3f(-L2-L6,L1,z);   //9
     glVertex3f(-L2,L1,z);   //10
     glVertex3f(0.0f,L5+L1,z);
-    
+
     glVertex3f(0.0f,0.0f,-z);
     glVertex3f(0.0f,L5+L1,-z);    //1
     glVertex3f(L2,L1,-z);    //2
@@ -206,10 +206,10 @@ void drawFullStar(){
     glVertex3f(-L2-L6,L1,-z);   //9
     glVertex3f(-L2,L1,-z);   //10
     glVertex3f(0.0f,L5+L1,-z);
-    
+
     glEnd();
     glFlush();
-    
+
 //    connect two stars
     glBegin(GL_QUAD_STRIP);
     glColor4f(0.96f, 0.61f, 0.69f,1.0f);
@@ -235,41 +235,41 @@ void drawFullStar(){
     glVertex3f(-L2,L1,-z);   //10
     glVertex3f(0.0f,L5+L1,z);
     glVertex3f(0.0f,L5+L1,-z);
-    
+
     glEnd();
     glFlush();
-    
-    
+
+
 //    draw the balls
-    
+
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    
+
     glPushMatrix();
     glTranslatef(0.0f,L5+L1,0.0f);
     drawSphere( z/2, 10, 10 );
     glPopMatrix();
-    
+
     glPushMatrix();
     glTranslatef(L2+L6,L1,0.0f);
     drawSphere( z/2, 10, 10 );
     glPopMatrix();
-    
+
     glPushMatrix();
     glTranslatef(L7,-L8,0.0f);
     drawSphere( z/2, 10, 10 );
     glPopMatrix();
-    
-    
+
+
     glPushMatrix();
     glTranslatef(-L7,-L8,0.0f);
     drawSphere( z/2, 10, 10 );
     glPopMatrix();
-    
+
     glPushMatrix();
     glTranslatef(-L2-L6,L1,0.0f);
     drawSphere( z/2, 10, 10 );
     glPopMatrix();
-    
+
 }
 
 
@@ -285,4 +285,191 @@ void drawWand(bool wave = 0){
     glColor4f( 0.0, 0.0, 0.0, 1.0 );
     glScaled(0.3, 0.3, 0.3);
     drawFullStar();
+}
+
+void drawCylinder(GLdouble base, GLdouble top, GLdouble height, GLint slices, GLint stacks) {
+
+  glPushMatrix();
+  glRotatef(180, 0, 1, 0);
+  glBegin(GL_QUAD_STRIP);
+  GLUquadricObj* quadric = gluNewQuadric();
+  gluQuadricDrawStyle(quadric, GLU_FILL);
+
+  gluCylinder(quadric, base, top, height, slices, stacks);
+
+  gluDeleteQuadric(quadric);
+  glEnd();
+  glPopMatrix();
+
+}
+
+void drawPetal(double r, int longs) {
+
+  double theta, x, y, z;
+
+  glBegin(GL_POLYGON);
+  for (int i = 0; i < longs; i++) {
+      theta = i * M_PI / (longs * 2);
+      x = r * sin(2 * theta) * cos(theta);
+      y = r * sin(2 * theta) * sin(theta);
+      z = (-1) * abs(M_PI / 4 - theta) + M_PI / 4;
+      glColor4f(1, z, z, 1);
+      glVertex3f(x, y, z);
+  }
+  glEnd();
+
+}
+
+
+void drawLeaf(double r, int longs) {
+
+    double theta, x, y, z;
+
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < longs; i++) {
+        theta = i * M_PI / (longs * 2);
+        x = r * sin(2 * theta) * cos(theta);
+        y = r * sin(2 * theta) * sin(theta);
+        z = (-1) * abs(M_PI / 4 - theta) + M_PI / 4;
+        glColor4f(z, 1, z, 1);
+        glVertex3f(x, y, z);
+    }
+    glEnd();
+
+
+    theta = M_PI / 4;
+    x = r * sin(2 * theta) * cos(theta);
+    y = r * sin(2 * theta) * sin(theta);
+    z = (-1) * abs(M_PI / 4 - theta) + M_PI / 4;
+    glBegin(GL_LINES);
+    glColor4f(1, 1, 1, 1);
+    glVertex3f(0, 0, 0);
+    glVertex3f(x, y, z);
+    glEnd();
+}
+
+
+
+void drawFlower() {
+
+    glScalef(0.5, 0.5, 0.5);
+    glColor4f(0.1, 0.9, 0.1, 1);
+    drawCylinder(0.1, 0.1, 3, 20, 20);
+
+    for (int i = 0; i < 5; i++) {
+        drawPetal(2.5, 20);
+        glRotatef(72, 0, 0, 1);
+    }
+
+    glPushMatrix();
+    glTranslatef(0, 0, -1);
+    drawLeaf(1.5, 20);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 0, 0.15);
+    glColor4f(1, 1, 0, 1);
+    glScalef(0.2, 0.2, 0.2);
+    drawSphere(1, 10, 10);
+    glPopMatrix();
+}
+
+void drawDeadPetal(double r, int longs) {
+
+  double theta, x, y, z;
+
+  glBegin(GL_POLYGON);
+  for (int i = 0; i < longs; i++) {
+      theta = i * M_PI / (longs * 2);
+      x = r * sin(2 * theta) * cos(theta);
+      y = r * sin(2 * theta) * sin(theta);
+      z = (-1) * abs(M_PI / 4 - theta) + M_PI / 4;
+      glColor4f(1, 0.5, 0.4, 1);
+      //glColor4f(1, z, 1, 1);
+      glVertex3f(x, y, -z);
+  }
+  glEnd();
+
+}
+
+void drawDeadFlower() {
+  glScalef(0.5, 0.5, 0.5);
+  glColor4f(0.56, 0.45, 0.2, 1);
+  drawCylinder(0.1, 0.1, 3, 20, 20);
+
+  for (int i = 0; i < 2; i++) {
+      drawDeadPetal(2.5, 20);
+      glRotatef(100, 0, 0, 1);
+  }
+
+
+  glPushMatrix();
+  glTranslatef(0, 0, 0.05);
+  glColor4f(0.5, 0.4, 0.2, 1);
+  glScalef(0.2, 0.2, 0.2);
+  drawSphere(1, 10, 10);
+  glPopMatrix();
+}
+
+void drawsurfaces(double p, int lats, int longs) {
+	int i, j;
+		for (i = 1; i <= (lats); i++) {
+		double lat0 = M_PI * ( (double)(i - 1) / (4*lats));
+
+		double z0 = (p / (1 - sin(lat0)))* sin(lat0) + p / 2;
+		double zr0 = (p / (1 - sin(lat0))) * cos(lat0);
+
+		double lat1 = M_PI * ( (double)i / (4 * lats));
+
+		double z1 = (p / (1 - sin(lat1))) * sin(lat1) + p / 2;
+		double zr1 = (p / (1 - sin(lat1))) * cos(lat1);
+		glBegin(GL_QUAD_STRIP);
+		for (j = 0; j <= longs; j++) {
+			double lng = 2 * M_PI * (double)(j - 1) / longs;
+			double x = cos(lng);
+			double y = sin(lng);
+
+			glNormal3d(x * zr0, y * zr0, z0);
+			glVertex3d(x * zr0, y * zr0, z0);
+			glNormal3d(x * zr1, y * zr1, z1);
+			glVertex3d(x * zr1, y * zr1, z1);
+		}
+		glEnd();
+	}
+}
+
+void drawCup() {
+	glColor4d(1.0, 1.0, 1.0, 1.0);
+	drawsurfaces(0.8, 20, 20);
+	glTranslatef(0.0, 0.0, 0.4);
+
+	glBegin(GL_POLYGON);
+	int n = 20;
+	for (int i = 0; i < n; i++)
+	{
+		glVertex2f(0.8 * cos(2 * M_PI * i / n), 0.8 * sin(2 * M_PI * i / n));
+	}
+	glEnd();
+	glBegin(GL_POLYGON);
+	glColor4f(0.1, 0.3, 0.7, 0.3);
+
+  //Water
+	for (int i = 0; i < n; i++)
+	{
+		glVertex3f(1.6 * cos(2 * M_PI * i / n), 1.6 * sin(2 * M_PI * i / n), 1.5);
+	}
+	glEnd();
+
+	GLfloat Va[] = { 0.3,0.3,0.3,1.0 };
+	GLfloat Vd[] = { 0.6,0.6,0.6,1.0 };
+	GLfloat Vs[] = { 0.6,0.6,0.6,1.0 };
+	GLfloat Vp[] = { 0.0,0.0,1.0,0.25 };
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, Va);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, Vd);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, Vs);
+	glLightfv(GL_LIGHT0, GL_POSITION, Vp);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 }
