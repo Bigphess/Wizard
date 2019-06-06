@@ -2,6 +2,11 @@
 #include <glfw/glfw3.h>
 #include <math.h>
 
+
+
+
+
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -20,6 +25,7 @@ void init(int argc, char* argv[])
 void drawsurfaces(double p, int lats, int longs) {
 	int i, j;
 		for (i = 1; i <= (lats); i++) {
+	
 		double lat0 = M_PI * ( (double)(i - 1) / (4*lats));
 		
 		double z0 = (p / (1 - sin(lat0)))* sin(lat0) + p / 2;
@@ -44,6 +50,52 @@ void drawsurfaces(double p, int lats, int longs) {
 	}
 }
 
+void drawdisk(double r)
+{
+	glBegin(GL_POLYGON);
+	int n = 20;
+	for (int i = 0; i < n; i++)
+	{
+		glVertex2f(r * cos(2 * M_PI * i / n), r * sin(2 * M_PI * i / n));
+	}
+
+	glEnd();
+}
+
+
+
+void waterlevel(double p, int lats) {
+	int i;
+	//record the current position
+	glPushMatrix();
+	for (i = 1; i <= (lats); i++) {
+		
+		double lat0 = M_PI * ((double)(i - 1) / (6 * lats));
+
+		double z0 = (p / (1 - sin(lat0))) * sin(lat0) + p / 2;
+		
+		
+		double lat1 = M_PI * ((double)i / (6 * lats));
+
+		double z1 = (p / (1 - sin(lat1))) * sin(lat1) + p / 2;
+		double zr1 = (p / (1 - sin(lat1))) * cos(lat1);
+		
+		glTranslatef(0.0, 0.0, (z1 - z0));
+		
+
+		glBegin(GL_POLYGON);
+		glColor4d(0.1, 0.5, 0.7, 0.1);
+	
+		
+		drawdisk(zr1);
+		
+		
+		
+	}
+	//restore
+	glPopMatrix();
+	
+}
 
 void display(GLFWwindow* window)
 {
@@ -71,17 +123,18 @@ void display(GLFWwindow* window)
 
 
 	glColor4d(1.0, 1.0, 1.0, 1.0);
+	//change in 0603
+	glScaled(0.01f,0.01f,0.01f);
+	glRotated(180,1.0f,0.0f,0.0f);
+
 	drawsurfaces(0.8, 20, 20);
+
 	glTranslatef(0.0, 0.0, 0.4);
 
-	glBegin(GL_POLYGON);
-	int n = 20;
-	for (int i = 0; i < n; i++)
-	{
-		glVertex2f(0.8 * cos(2 * M_PI * i / n), 0.8 * sin(2 * M_PI * i / n));  
-	}
+	drawdisk(0.8);
 
-	glEnd();
+	
+	waterlevel(0.8, 20);
 
 	GLfloat Va[] = { 0.3,0.3,0.3,1.0 };
 	GLfloat Vd[] = { 0.6,0.6,0.6,1.0 };
