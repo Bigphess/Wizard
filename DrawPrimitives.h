@@ -351,8 +351,9 @@ void drawLeaf(double r, int longs) {
 
 
 void drawFlower() {
-
-    glScalef(0.5, 0.5, 0.5);
+    glRotatef(180, 0, 1, 0);
+    glScalef(0.01, 0.01, 0.01);
+    glTranslatef(0, 0, 2);
     glColor4f(0.1, 0.9, 0.1, 1);
     drawCylinder(0.1, 0.1, 3, 20, 20);
 
@@ -374,42 +375,57 @@ void drawFlower() {
     glPopMatrix();
 }
 
+/*Changed DeadFlower*/
+
 void drawDeadPetal(double r, int longs) {
+    glPushMatrix();
 
-  double theta, x, y, z;
-
-  glBegin(GL_POLYGON);
-  for (int i = 0; i < longs; i++) {
-      theta = i * M_PI / (longs * 2);
-      x = r * sin(2 * theta) * cos(theta);
-      y = r * sin(2 * theta) * sin(theta);
-      z = (-1) * abs(M_PI / 4 - theta) + M_PI / 4;
-      glColor4f(1, 0.5, 0.4, 1);
-      //glColor4f(1, z, 1, 1);
-      glVertex3f(x, y, -z);
-  }
-  glEnd();
-
+    double theta, x, y, z;
+    glColor4f(0.6, 0.3, 0.2, 1);
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < longs; i++) {
+        theta = i * M_PI / (longs * 2);
+        x = r * sin(2 * theta) * cos(theta);
+        y = r * sin(2 * theta) * sin(theta);
+        z = abs(M_PI / 4 - theta) - M_PI / 4;
+        glVertex3f(x, y, -x*y);
+    }
+    glEnd();
+    glPopMatrix();
 }
 
 void drawDeadFlower() {
-  glScalef(0.5, 0.5, 0.5);
-  glColor4f(0.56, 0.45, 0.2, 1);
-  drawCylinder(0.1, 0.1, 3, 20, 20);
+    glRotated(180, 1, 0, 0);
+    glScalef(0.008, 0.008, 0.008);
+    glTranslatef(0, 0, 3);
+    glColor4f(0.56, 0.44, 0.2, 1);
+    drawCylinder(0.1, 0.1, 4, 20, 20);
 
-  for (int i = 0; i < 2; i++) {
-      drawDeadPetal(2.5, 20);
-      glRotatef(100, 0, 0, 1);
-  }
+    glRotated(180, 1, 0, 0);
+    for (int i = 0; i < 20; i++) {
+        glRotated(-160/20, 1, 0, 0);
+        drawCylinder(0.1, 0.1, 0.1, 20, 20);
+        glTranslatef(0, 0, -0.1);
+    }
+    drawCylinder(0.1, 0.1, 0.5, 20, 20);
+    glTranslatef(0, 0, -0.5);
 
+    glScalef(0.6, 0.6, 0.6);
 
-  glPushMatrix();
-  glTranslatef(0, 0, 0.05);
-  glColor4f(0.5, 0.4, 0.2, 1);
-  glScalef(0.2, 0.2, 0.2);
-  drawSphere(1, 10, 10);
-  glPopMatrix();
+    for (int i = 0; i < 5; i++) {
+        drawDeadPetal(2, 20);
+        glRotatef(72, 0, 0, 1);
+    }
+
+    glPushMatrix();
+    glTranslatef(0, 0, -0.08);
+    glColor4f(0.5, 0.4, 0.2, 1);
+    glScalef(0.2, 0.2, 0.2);
+    drawSphere(0.6, 10, 10);
+    glPopMatrix();
 }
+
+/*-----------------*/
 
 void drawsurfaces(double p, int lats, int longs) {
 	int i, j;
