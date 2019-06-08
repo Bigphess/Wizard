@@ -12,3 +12,12 @@ Wang Yuke: magic models
 Saito Tatsuhiko: magic models  
 Tanaka Yuka: the markers distance detection code  
 
+
+## marker numbers
+Path: ``res/xx.png``
+* 21ee -> wand
+* 14b7 -> cup
+    * empty & full of water
+* 1d59 -> flower
+    * dead and bloom
+

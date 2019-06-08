@@ -1,17 +1,7 @@
-//
-//  main.cpp
-//  AR2019
-//
-//  Created by 许若芃 on 2019/04/08.
-//  Copyright © 2019 许若芃. All rights reserved.
-//
-
-
 
 
 #define GLFW_INCLUDE_GLU
 
-//#include <GLTools.h>
 #include <GLFW/glfw3.h>
 
 
@@ -27,7 +17,8 @@
 #include "DrawPrimitives.h"
 
 
-// Added in Exercise 9 - Start *****************************************************************
+// You need to change the size of window and the value of scale when you use different camera
+
 
 struct Position { double x,y,z; };
 
@@ -41,13 +32,25 @@ int towardsList[2] = {0x005a, 0x0272};
 int towardscounter = 0;
 Position ballpos;
 int ballspeed = 100;
-// Added in Exercise 9 - End *****************************************************************
 
 //camera settings
+// if use web camera
+//const int camera_width  = 640;
+//const int camera_height = 480;
+// if use mac's camera
 const int camera_width  = 1280;
 const int camera_height = 720;
 const int virtual_camera_angle = 30;
 unsigned char bkgnd[camera_width*camera_height*3];
+
+
+//add_tanaka start
+bool cup = false;
+bool flower = false;
+float predist_cup = 0.0;
+float predist_flower = 0.0;
+//add_tanaka end
+
 
 void InitializeVideoStream( cv::VideoCapture &camera ) {
     if( camera.isOpened() )
@@ -64,81 +67,11 @@ void InitializeVideoStream( cv::VideoCapture &camera ) {
     }
 }
 
-// Added in Exercise 9 - Start *****************************************************************
-void multMatrix(float mat[16], float vec[4])
-{
-    for(int i=0; i<4; i++)
-    {
-        snowmanLookVector[i] = 0;
-        for(int j=0; j<4; j++)
-            snowmanLookVector[i] += mat[4*i + j] * vec[j];
-    }
-}
-
-void moveBall(float mat[16])
-{
-    float vector[3];
-    vector[0] = mat[3]  - (float)ballpos.x;
-    vector[1] = mat[7]  - (float)ballpos.y;
-    vector[2] = mat[11] - (float)ballpos.z;
-
-    float length = sqrt( vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2] );
-    if(balldebug) std::cout << length << std::endl;
-    if( length < 0.01)
-    {
-        towards = towardsList[(towardscounter++)%2];
-        if(balldebug) std::cout << "target changed to marker " << towards << std::endl;
-        ballspeed = 60 + 80 * rand()/RAND_MAX;
-        return;
-    }
-    ballpos.x += vector[0] / (ballspeed * length);
-    ballpos.y += vector[1] / (ballspeed * length);
-    ballpos.z += vector[2] / (ballspeed * length);
-
-}
-
-void rotateToMarker(float thisMarker[16], float lookAtMarker[16], int markernumber)
-{
-    float vector[3];
-    vector[0] = lookAtMarker[3] - thisMarker[3];
-    vector[1] = lookAtMarker[7] - thisMarker[7];
-    vector[2] = lookAtMarker[11] - thisMarker[11];
-
-    if(towards == markernumber) moveBall(lookAtMarker);
-
-    //normalize vector
-    float help = sqrt( vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2] );
-    vector[0] /= help;
-    vector[1] /= help;
-    vector[2] /= help;
-
-    if(debugmode) std::cout << "Vector: " << vector[0] << ", " << vector[1] << ", " << vector[2] << std::endl;
-
-    float defaultLook[4] = {1,0,0,0};
-    multMatrix(thisMarker, defaultLook);
-
-    //normalize snowmanLookVector
-    help = sqrt( snowmanLookVector[0]*snowmanLookVector[0] + snowmanLookVector[1]*snowmanLookVector[1] + snowmanLookVector[2]*snowmanLookVector[2] );
-    snowmanLookVector[0] /= help;
-    snowmanLookVector[1] /= help;
-    snowmanLookVector[2] /= help;
-
-    if(debugmode) std::cout << "SnowmanLookVector: " << snowmanLookVector[0] << ", " << snowmanLookVector[1] << ", " << snowmanLookVector[2] << std::endl;
-
-    float angle = ((float) (180.0 / M_PI)) * acos( vector[0] * snowmanLookVector[0] + vector[1] * snowmanLookVector[1] + vector[2] * snowmanLookVector[2] );
-    if((vector[0] * snowmanLookVector[1] - vector[1] * snowmanLookVector[0]) < 0 ) angle *= -1;
-
-    if(debugmode) std::cout << "Angle: " << angle << std::endl;
-
-    glRotatef(angle, 0, 0, 1);
-}
-// Added in Exercise 9 - End *****************************************************************
 
 /* program & OpenGL initialization */
 void initGL(int argc, char *argv[])
 {
     // initialize the GL library
-    // Added in Exercise 8 - End *****************************************************************
     // pixel storage/packing stuff
     glPixelStorei(GL_PACK_ALIGNMENT, 1);// for glReadPixels
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // for glTexImage2D
@@ -152,19 +85,6 @@ void initGL(int argc, char *argv[])
     glEnable( GL_DEPTH_TEST );
     glClearDepth( 1.0 );
 
-    // light parameters
-    GLfloat light_pos[] = { 1.0f, 1.0f, 1.0f, 0.2f };
-    GLfloat light_amb[] = { 0.6f, 0.6f, 0.6f, 1.0f };
-    GLfloat light_dif[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-//    GLfloat Vs[] = {0.6,0.6,0.6,1.0};
-
-    // enable lighting
-    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
-    glLightfv( GL_LIGHT0, GL_AMBIENT,  light_amb );
-    glLightfv( GL_LIGHT0, GL_DIFFUSE,  light_dif );
-//    glLightfv(GL_LIGHT0, GL_SPECULAR, Vs);
-    glEnable( GL_LIGHTING );
-    glEnable( GL_LIGHT0 );
 }
 
 void display(GLFWwindow* window, const cv::Mat &img_bgr, std::vector<Marker> &markers)
@@ -172,10 +92,9 @@ void display(GLFWwindow* window, const cv::Mat &img_bgr, std::vector<Marker> &ma
     const auto camera_image_size = sizeof(unsigned char) *img_bgr.rows*img_bgr.cols * 3;
     auto background_buffer_size = sizeof(bkgnd);
     memcpy(bkgnd, img_bgr.data, background_buffer_size);
-
+    
     int width0, height0;
     glfwGetFramebufferSize(window, &width0, &height0);
-    //    reshape(window, width, height);
 
     // clear buffers
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -198,100 +117,148 @@ void display(GLFWwindow* window, const cv::Mat &img_bgr, std::vector<Marker> &ma
 
     glEnable(GL_DEPTH_TEST);
 
-    //    return;
 
     // move to marker-position
     glMatrixMode( GL_MODELVIEW );
 
-//    // Added in Exercise 9 - Start *****************************************************************
-//    float resultMatrix_005A[16];
-//    float resultMatrix_0272[16];
+
+//    14b7for testing **********************
+//    float resultMatrix_14B7[16];
 //    for(int i=0; i<markers.size(); i++){
 //        const int code =markers[i].code;
-//        if(code == 0x005a) {
+//        if(code == 0x14B7) {
 //            for(int j=0; j<16; j++)
-//                resultMatrix_005A[j] = markers[i].resultMatrix[j];
-//        }else if(code == 0x0272){
-//            for(int j=0; j<16; j++)
-//                resultMatrix_0272[j] = markers[i].resultMatrix[j];
+//                resultMatrix_14B7[j] = markers[i].resultMatrix[j];
 //        }
+//
 //    }
 //
 //
 //    for (int x=0; x<4; ++x)
 //        for (int y=0; y<4; ++y)
-//            resultTransposedMatrix[x*4+y] = resultMatrix_005A[y*4+x];
-//    // Added in Exercise 9 - End *****************************************************************
+//            resultTransposedMatrix[x*4+y] = resultMatrix_14B7[y*4+x];
+//
+//
+//
+//    float scale = 0.3;
+//    resultTransposedMatrix[12] *= scale;  // x方向のスケール調整
+//    resultTransposedMatrix[13] *= scale;  // y方向のスケール調整
+//
+//
+//    //glLoadTransposeMatrixf( resultMatrix );
+//    glLoadMatrixf( resultTransposedMatrix );
+//    drawCup();
+//14b7 for testing end *****************************
 
-    float resultMatrix_14B7[16];
+    
+//    takana ******************
+    
+    float resultMatrix_005A[16];
+    float resultMatrix_21ee[16];
+    float resultMatrix_1d59[16];
     for(int i=0; i<markers.size(); i++){
         const int code =markers[i].code;
-        if(code == 0x14B7) {
+
+
+        //change makar_id here
+        //object(cup)->14b7
+        //object(flower) -> 1d59
+        //魔法棒 -> 21ee
+
+        if(code == 0x14b7) {
             for(int j=0; j<16; j++)
-                resultMatrix_14B7[j] = markers[i].resultMatrix[j];
+                resultMatrix_005A[j] = markers[i].resultMatrix[j];
+        }else if(code == 0x21ee){
+            for(int j=0; j<16; j++)
+                resultMatrix_21ee[j] = markers[i].resultMatrix[j];
+        }else if(code == 0x1d59){
+            for(int j=0; j<16; j++)
+                resultMatrix_1d59[j] = markers[i].resultMatrix[j];
         }
-        
     }
 
-
+    float scale = 0.3; //0.5 for web camera
+    resultMatrix_005A[3] *= scale;
+    resultMatrix_005A[7] *= scale;
+    resultMatrix_21ee[3] *= scale;
+    resultMatrix_21ee[7] *= scale;
+    resultMatrix_1d59[3] *= scale;
+    resultMatrix_1d59[7] *= scale;
+    
+    
+    //    wand
     for (int x=0; x<4; ++x)
         for (int y=0; y<4; ++y)
-//            resultTransposedMatrix[x*4+y] = resultMatrix_005A[y*4+x];
-            resultTransposedMatrix[x*4+y] = resultMatrix_14B7[y*4+x];
-    
-    
-    
-    /////
-    float scale = 0.3;
-    resultTransposedMatrix[12] *= scale;  // x方向のスケール調整
-    resultTransposedMatrix[13] *= scale;  // y方向のスケール調整
-    ////
-    
-    
-    //glLoadTransposeMatrixf( resultMatrix );
+            resultTransposedMatrix[x*4+y] = resultMatrix_21ee[y*4+x];
     glLoadMatrixf( resultTransposedMatrix );
-//    drawSnowman(1);
     drawWand();
+    
+    float offset[4];
+    offset[0] = -0.04 * resultMatrix_21ee[0] + resultMatrix_21ee[3];
+    offset[1] = -0.04 * resultMatrix_21ee[4] + resultMatrix_21ee[7];
+    offset[2] = -0.04 * resultMatrix_21ee[8] + resultMatrix_21ee[11];
+    offset[3] = -0.04 * resultMatrix_21ee[12] + resultMatrix_21ee[15];
+    
+    /*****debug for wand position****
+      glLoadIdentity();
+      glTranslatef((float)offset[0]/offset[3],(float)offset[1]/offset[3],(float)offset[2]/offset[3]);
+      glColor4f(1,0,0,1);
+      drawSphere(0.008,10,10);
+    /*********************************/
+    
+    float dff_x = pow(resultMatrix_005A[3]-offset[0]/offset[3],2);
+    float dff_y = pow(resultMatrix_005A[7]-offset[1]/offset[3],2);
+    float dff_z = pow(resultMatrix_005A[11]-offset[2]/offset[3],2);
+    //printf("%f\n",sqrt(dff_x + dff_y + dff_z));
+    float dist_cup =sqrt(dff_x + dff_y + dff_z);
+    if(predist_cup >= 0.03 && dist_cup < 0.03 &&( predist_cup - dist_cup < 0.1 )) cup = !cup;
+    printf("dist = %f,%f,%f\n",dff_x ,dff_y ,dff_z);
+    printf("%f\n",sqrt(dff_x + dff_y + dff_z));
+    if(cup){
+        printf("true\n");
+    }else{
+        printf("false\n");
+    }
+    
+    dff_x = pow(offset[0]/offset[3]-resultMatrix_1d59[3],2);
+    dff_y = pow(offset[1]/offset[3]-resultMatrix_1d59[7],2);
+    dff_z = pow(offset[2]/offset[3]-resultMatrix_1d59[11],2);
 
+    float dist_flower =sqrt(dff_x + dff_y + dff_z);
+    if(predist_flower >= 0.03 && dist_flower < 0.03 &&( predist_flower - dist_flower < 0.1 )) flower = !flower;
+    
+    
+    //flower
+    for (int x=0; x<4; ++x)
+        for (int y=0; y<4; ++y)
+            resultTransposedMatrix[x*4+y] = resultMatrix_1d59[y*4+x];
+    glLoadMatrixf( resultTransposedMatrix );
+    
+    if(flower){
+        drawFlower();
+    }else{
+        drawDeadFlower();
+    }
+    
+    
+    //cup
+    for (int x=0; x<4; ++x)
+        for (int y=0; y<4; ++y)
+            resultTransposedMatrix[x*4+y] = resultMatrix_005A[y*4+x];
+    glLoadMatrixf( resultTransposedMatrix );
+    drawCup(cup);
+    
 
-    // Added in Exercise 9 - Start *****************************************************************
-//    rotateToMarker(resultMatrix_005A, resultMatrix_0272, 0x005a);
-//
-//    drawSnowman();
-//
-//    for (int x=0; x<4; ++x)
-//        for (int y=0; y<4; ++y)
-//            resultTransposedMatrix[x*4+y] = resultMatrix_0272[y*4+x];
-//
-//    glLoadMatrixf( resultTransposedMatrix );
-//
-//    rotateToMarker(resultMatrix_0272, resultMatrix_005A, 0x0272);
-//
-//    drawSnowman();
-//
-//    //drawBall
-//    glLoadIdentity();
-//    glTranslatef((float) ballpos.x, (float) ballpos.y + 0.024f, (float) ballpos.z);
-//    glColor4f(1,0,0,1);
-//    drawSphere(0.005, 10, 10);
-//    // Added in Exercise 9 - End *****************************************************************
-//
-//
-//    //drawBall
-//    for (int x=0; x<4; ++x)
-//        for (int y=0; y<4; ++y)
-//            resultTransposedMatrix[x*4+y] = resultMatrix_0272[y*4+x];
-//    glLoadIdentity();
-//    glLoadMatrixf( resultTransposedMatrix );
-//    drawSphere(0.005, 10, 10);
+    
+    predist_cup = dist_cup;
+    predist_flower = dist_flower;
+//    tanaka **********************
+    
+    
+    
 
     int key = cv::waitKey (10);
     if (key == 27) exit(0);
-    // Added in Exercise 9 - Start *****************************************************************
-    else if (key == 100) debugmode = !debugmode;
-    else if (key == 98) balldebug = !balldebug;
-    // Added in Exercise 9 - End *****************************************************************
-
 }
 
 void reshape( GLFWwindow* window, int width, int height ) {
@@ -346,7 +313,7 @@ int main(int argc, char* argv[]) {
     // setup OpenCV
     cv::Mat img_bgr;
     InitializeVideoStream(cap);
-    const double kMarkerSize = 0.06;// 0.048; // [m]
+    const double kMarkerSize = 0.048;// 0.048; // [m]
     MarkerTracker markerTracker(kMarkerSize,87,95);
 
     std::vector<Marker> markers;
@@ -368,8 +335,6 @@ int main(int argc, char* argv[]) {
         /* Track a marker */
         markerTracker.findMarker( img_bgr, markers);///resultMatrix);
         
-        //        cv::imshow("img_bgr", img_bgr);
-        //        cv::waitKey(10); /// Wait for one sec.
 
         /* Render here */
         display(window, img_bgr, markers);
