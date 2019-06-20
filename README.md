@@ -8,7 +8,7 @@ In this repository, we made an AR system based on AR markers, OpenCV and OpenGL.
   
 Just like this magic picture drawn by Yuke!
 
-![](ideation.jpg)
+![](res/ideation.jpg)
 
 
 ## Workflow
