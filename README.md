@@ -54,7 +54,7 @@ We made different models for wand, flower and cup
 	* Slides for presetation
 * [Saito Tatsuhiko](https://github.com/katzeallergie)
 	* Alive and dead flower models
-* Tanaka Yuka
+* [Tanaka Yuka](https://github.com/tanakayuka)
 	* Markers distance detection code  
 
 
